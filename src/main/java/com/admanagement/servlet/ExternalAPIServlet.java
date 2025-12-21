@@ -61,7 +61,7 @@ public class ExternalAPIServlet extends HttpServlet {
         }
 
         String anonymousUserId = json.has("anonymousUserId") ? json.get("anonymousUserId").getAsString() : null;
-        String tag = json.has("Tag") ? json.get("Tag").getAsString() : null;
+        String tag = json.has("tag") ? json.get("tag").getAsString() : null;
         int score = json.has("score") ? json.get("score").getAsInt() : 0;
         String platform = json.has("platform") ? json.get("platform").getAsString() : null;
         int limit = 10;
