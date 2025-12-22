@@ -204,13 +204,17 @@
             margin: 0 auto;
         }
     </style>
+    <!-- 引入用户兴趣处理脚本 -->
+    <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <form action="product-search" method="post" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="输入商品名称搜索...">
+        <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
+        <!-- 在index.jsp中修改搜索表单 -->
+        <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
+            <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
         </form>
     </div>
@@ -220,36 +224,36 @@
     <div class="category-container">
         <ul class="category-list">
             <li class="category-item">
-                <a href="product-list"
-                   class="${empty currentCategory ? 'active' : ''}">全部商品</a>
+                <a href="product-list" class="${empty currentCategory ? 'active' : ''}"
+                   onclick="addInterestScore('all', 'clickCategory')">全部商品</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=food"
-                   class="${currentCategory == 'food' ? 'active' : ''}">食品</a>
+                <a href="product-list?category=food" class="${currentCategory == 'food' ? 'active' : ''}"
+                   onclick="addInterestScore('food', 'clickCategory')">食品</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=makeup"
-                   class="${currentCategory == 'makeup' ? 'active' : ''}">美妆</a>
+                <a href="product-list?category=makeup" class="${currentCategory == 'makeup' ? 'active' : ''}"
+                   onclick="addInterestScore('makeup', 'clickCategory')">美妆</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=digital"
-                   class="${currentCategory == 'digital' ? 'active' : ''}">数码</a>
+                <a href="product-list?category=digital" class="${currentCategory == 'digital' ? 'active' : ''}"
+                   onclick="addInterestScore('digital', 'clickCategory')">数码</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=sport"
-                   class="${currentCategory == 'sport' ? 'active' : ''}">运动</a>
+                <a href="product-list?category=sport" class="${currentCategory == 'sport' ? 'active' : ''}"
+                   onclick="addInterestScore('sport', 'clickCategory')">运动</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=clothes"
-                   class="${currentCategory == 'clothes' ? 'active' : ''}">服装</a>
+                <a href="product-list?category=clothes" class="${currentCategory == 'clothes' ? 'active' : ''}"
+                   onclick="addInterestScore('clothes', 'clickCategory')">服装</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=book"
-                   class="${currentCategory == 'book' ? 'active' : ''}">图书</a>
+                <a href="product-list?category=book" class="${currentCategory == 'book' ? 'active' : ''}"
+                   onclick="addInterestScore('book', 'clickCategory')">图书</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=others"
-                   class="${currentCategory == 'others' ? 'active' : ''}">其他</a>
+                <a href="product-list?category=others" class="${currentCategory == 'others' ? 'active' : ''}"
+                   onclick="addInterestScore('others', 'clickCategory')">其他</a>
             </li>
         </ul>
     </div>
@@ -261,9 +265,8 @@
             <c:forEach var="product" items="${productList}">
                 <div class="product-card">
                     <div class="product-img-container">
-                        <img src="images/${product.imageUrl}"
-                             alt="${product.name}"
-                             class="product-img">
+                        <img src="${pageContext.request.contextPath}/images/${product.imageUrl}"
+                             alt="${product.name}" class="product-img">
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
@@ -287,5 +290,12 @@
         <p>© 2025 购物商城 版权所有</p>
     </div>
 </div>
+
+<!-- 页面加载完成后初始化 -->
+<script>
+    window.onload = function() {
+        initLocalStorage(); // 初始化匿名ID和分数存储
+    };
+</script>
 </body>
 </html>

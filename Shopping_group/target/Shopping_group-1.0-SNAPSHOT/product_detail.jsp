@@ -268,13 +268,17 @@
             margin: 0 auto;
         }
     </style>
+    <!-- 引入用户兴趣处理脚本 -->
+    <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <form action="product-search" method="post" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="输入商品名称搜索...">
+        <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
+        <!-- 在product_detail.jsp中修改搜索表单 -->
+        <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
+            <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
         </form>
     </div>
@@ -288,9 +292,8 @@
     <c:when test="${not empty product}">
         <div class="detail-container">
             <div class="detail-img-container">
-                <img src="images/${product.imageUrl}"
-                     alt="${product.name}"
-                     class="detail-img">
+                <img src="${pageContext.request.contextPath}/images/${product.imageUrl}"
+                     alt="${product.name}" class="detail-img">
             </div>
 
             <div class="detail-info">
@@ -325,6 +328,39 @@
 </div>
 
 <script>
+    // 初始化匿名ID和分数存储
+    initLocalStorage();
+
+    // 浏览时长统计（≥30秒加分，被动行为）
+    let browseStartTime = new Date().getTime();
+    let isScoreAdded = false; // 防止重复加分
+
+    // 监听页面可见性（避免后台挂起时误加分）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            browseStartTime = new Date().getTime(); // 页面隐藏时重置开始时间
+        }
+    });
+
+    // 定时检查浏览时长
+    function checkBrowseDuration() {
+        if (isScoreAdded || !${not empty product}) return; // 商品不存在时不统计
+
+        const duration = (new Date().getTime() - browseStartTime) / 1000; // 单位：秒
+        if (duration >= 30) {
+            // 获取当前商品品类（从JSP变量获取）
+            const currentTag = '${product.category}';
+            addInterestScore(currentTag, 'browse'); // 浏览行为+1分
+            isScoreAdded = true;
+        } else {
+            setTimeout(checkBrowseDuration, 1000); // 每秒检查一次
+        }
+    }
+
+    // 启动浏览时长统计
+    checkBrowseDuration();
+
+    // 原有加入购物车逻辑
     document.querySelector('.detail-btn')?.addEventListener('click', function () {
         alert('商品已加入购物车！');
     });
