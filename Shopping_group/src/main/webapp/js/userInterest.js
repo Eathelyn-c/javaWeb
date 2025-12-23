@@ -23,21 +23,26 @@ function initLocalStorage() {
 // 3. 分数计算逻辑（加权规则：主动行为权重>被动行为）
 /**
  * @param tag 商品品类（如digital、food、makeup等）
- * @param behavior 行为类型：clickCategory(+3)、search(+2)、browse(+1)
+ * @param behavior 行为类型：buy(+5)、addToCart(+4)、viewDetail(+3)、clickCategory(+3)、search(+2)、browse(+1)
  */
 function addInterestScore(tag, behavior) {
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
-    // 行为-权重映射表（可根据需求调整）
+    // 行为-权重映射表（新增购买和加入购物车行为）
     const weightMap = {
-        clickCategory: 3,  // 点击品类导航（主动选择，兴趣最强）
-        search: 2,         // 搜索品类相关商品（主动查询，兴趣次强）
-        browse: 1          // 浏览详情页≥30秒（被动浏览，兴趣较弱）
+        buy: 5,          // 点击购买（最高权重，表示强烈购买意向）
+        addToCart: 4,    // 加入购物车（高权重，表示购买意向）
+        viewDetail: 3,   // 点击查看商品详情（主动查看，兴趣较强）
+        clickCategory: 3, // 点击品类导航（主动选择，兴趣较强）
+        search: 2,       // 搜索品类相关商品（主动查询，兴趣次强）
+        browse: 1        // 浏览详情页≥30秒（被动浏览，兴趣较弱）
     };
+
     const addScore = weightMap[behavior] || 0;
     // 累加分数（同一品类多次行为累计）
     scores[tag] = (scores[tag] || 0) + addScore;
     localStorage.setItem('userInterestScores', JSON.stringify(scores));
-    console.log('品类[' + tag + ']分数更新：' + scores[tag] + '（+' + addScore + '）');
+    console.log(`品类[${tag}] ${behavior}行为 +${addScore}分，总分=${scores[tag]}`);
+
     // 分数更新后立即发送到广告网站
     sendInterestData();
     return true; // 允许表单提交继续
@@ -47,7 +52,7 @@ function addInterestScore(tag, behavior) {
 function sendInterestData() {
     const anonymousUserId = localStorage.getItem('anonymousUserId');
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
-    const platform = 'shopping';  // 固定平台标识
+    const platform = 'shopping'; // 固定平台标识
 
     // 构建请求数据（每个品类一条记录，数组格式）
     const requestData = Object.entries(scores).map(([Tag, score]) => ({
@@ -121,7 +126,24 @@ function handleCategoryClick(event, tag) {
     }, 100);
 }
 
-// 7. 处理搜索结果加分（在搜索结果页调用）
+// 7. 处理查看详情点击事件
+function handleViewDetailClick(event, tag, productId) {
+    event.preventDefault(); // 阻止默认链接跳转
+    const link = event.target.closest('a');
+    const url = link.getAttribute('href');
+
+    // 增加查看详情分数
+    addInterestScore(tag, 'viewDetail');
+
+    // 延迟跳转以确保数据发送
+    setTimeout(() => {
+        window.location.href = url;
+    }, 100);
+}
+
+// 8. 处理搜索结果加分（在搜索结果页调用）
+// 删除以下函数中对'all'标签的处理：
+// 在 processSearchResults 函数中，确保不会处理'all'标签
 function processSearchResults() {
     // 获取所有搜索结果的品类
     const searchResults = document.querySelectorAll('.search-category');
@@ -133,6 +155,11 @@ function processSearchResults() {
     const categoryCounts = {};
     searchResults.forEach(element => {
         const category = element.textContent.trim();
+        // 跳过'all'标签
+        if (category.toLowerCase() === 'all') {
+            console.log('跳过all标签，不记录分数');
+            return;
+        }
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
 
@@ -154,11 +181,14 @@ function processSearchResults() {
     }, 500);
 }
 
-// 8. 直接更新品类分数（不发送数据）
+// 9. 直接更新品类分数（不发送数据）
 function updateCategoryScore(tag, score, behavior) {
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
     // 行为-权重映射表
     const weightMap = {
+        buy: 5,
+        addToCart: 4,
+        viewDetail: 3,
         clickCategory: 3,
         search: 2,
         browse: 1
@@ -168,7 +198,36 @@ function updateCategoryScore(tag, score, behavior) {
     // 累加分数（这里score是商品的个数，我们乘以权重）
     scores[tag] = (scores[tag] || 0) + (addScore * score);
     localStorage.setItem('userInterestScores', JSON.stringify(scores));
-    console.log('品类[' + tag + ']批量更新：增加' + (addScore * score) + '分，总分=' + scores[tag]);
+    console.log(`品类[${tag}]批量更新：增加${(addScore * score)}分，总分=${scores[tag]}`);
+}
+
+// 10. 处理购买按钮点击事件
+function handleBuyClick(event, tag) {
+    event.preventDefault();
+
+    // 添加购买行为分数
+    const success = addInterestScore(tag, 'buy');
+
+    if (success) {
+        // 模拟购买流程
+        alert('购买成功！感谢您的购买，订单已生成。');
+        // 这里可以跳转到订单页面或执行其他购买逻辑
+        // window.location.href = 'order-confirmation';
+    }
+    return false;
+}
+
+// 11. 处理加入购物车按钮点击事件
+function handleAddToCartClick(event, tag) {
+    event.preventDefault();
+
+    // 添加加入购物车行为分数
+    const success = addInterestScore(tag, 'addToCart');
+
+    if (success) {
+        alert('商品已成功加入购物车！');
+    }
+    return false;
 }
 
 // 页面加载时初始化

@@ -212,7 +212,6 @@
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
         <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
-        <!-- 在index.jsp中修改搜索表单 -->
         <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
             <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
@@ -223,10 +222,11 @@
 <div class="category-nav">
     <div class="category-container">
         <ul class="category-list">
+            <!-- 删除"全部商品"的加分逻辑，只保留导航功能 -->
             <li class="category-item">
-                <a href="product-list" class="${empty currentCategory ? 'active' : ''}"
-                   onclick="addInterestScore('all', 'clickCategory')">全部商品</a>
+                <a href="product-list" class="${empty currentCategory ? 'active' : ''}">全部商品</a>
             </li>
+            <!-- 其他分类保持不变 -->
             <li class="category-item">
                 <a href="product-list?category=food" class="${currentCategory == 'food' ? 'active' : ''}"
                    onclick="addInterestScore('food', 'clickCategory')">食品</a>
@@ -272,7 +272,11 @@
                         <h3 class="product-name">${product.name}</h3>
                         <div class="product-price">¥${product.price}</div>
                         <p class="product-desc">${product.description}</p>
-                        <a href="product-detail?id=${product.id}" class="product-link">查看详情</a>
+                        <!-- 修改查看详情链接，添加onclick事件 -->
+                        <a href="product-detail?id=${product.id}" class="product-link"
+                           onclick="return handleViewDetailClick(event, '${product.category}', ${product.id})">
+                            查看详情
+                        </a>
                     </div>
                 </div>
             </c:forEach>

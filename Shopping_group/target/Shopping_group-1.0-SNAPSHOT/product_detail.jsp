@@ -197,7 +197,15 @@
             border-radius: 4px;
         }
 
-        .detail-btn {
+        /* 按钮容器 */
+        .detail-btns {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* 加入购物车按钮 */
+        .cart-btn {
             padding: 18px 40px;
             background-color: #ff6700;
             color: #fff;
@@ -208,14 +216,36 @@
             transition: all 0.3s;
             font-weight: 600;
             letter-spacing: 1px;
-            width: 300px;
+            flex: 1;
             box-shadow: 0 4px 12px rgba(255,103,0,0.3);
         }
 
-        .detail-btn:hover {
+        .cart-btn:hover {
             background-color: #ff4500;
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(255,103,0,0.4);
+        }
+
+        /* 购买按钮 */
+        .buy-btn {
+            padding: 18px 40px;
+            background-color: #e60012;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            letter-spacing: 1px;
+            flex: 1;
+            box-shadow: 0 4px 12px rgba(230,0,18,0.3);
+        }
+
+        .buy-btn:hover {
+            background-color: #cc0010;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(230,0,18,0.4);
         }
 
         /* 无商品信息 */
@@ -276,7 +306,6 @@
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
         <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
-        <!-- 在product_detail.jsp中修改搜索表单 -->
         <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
             <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
@@ -308,7 +337,12 @@
                         分类：<span class="category-name">${product.category}</span>
                     </div>
                 </div>
-                <button class="detail-btn">加入购物车</button>
+
+                <!-- 按钮区域：加入购物车和购买 -->
+                <div class="detail-btns">
+                    <button class="cart-btn" id="addToCartBtn">加入购物车</button>
+                    <button class="buy-btn" id="buyBtn">立即购买</button>
+                </div>
             </div>
         </div>
     </c:when>
@@ -331,9 +365,12 @@
     // 初始化匿名ID和分数存储
     initLocalStorage();
 
+    // 获取当前商品品类
+    const currentTag = '${product.category}';
+
     // 浏览时长统计（≥30秒加分，被动行为）
     let browseStartTime = new Date().getTime();
-    let isScoreAdded = false; // 防止重复加分
+    let isBrowseScoreAdded = false; // 防止重复加分
 
     // 监听页面可见性（避免后台挂起时误加分）
     document.addEventListener('visibilitychange', () => {
@@ -344,14 +381,13 @@
 
     // 定时检查浏览时长
     function checkBrowseDuration() {
-        if (isScoreAdded || !${not empty product}) return; // 商品不存在时不统计
+        if (isBrowseScoreAdded || !'${not empty product}') return; // 商品不存在时不统计
 
         const duration = (new Date().getTime() - browseStartTime) / 1000; // 单位：秒
         if (duration >= 30) {
             // 获取当前商品品类（从JSP变量获取）
-            const currentTag = '${product.category}';
             addInterestScore(currentTag, 'browse'); // 浏览行为+1分
-            isScoreAdded = true;
+            isBrowseScoreAdded = true;
         } else {
             setTimeout(checkBrowseDuration, 1000); // 每秒检查一次
         }
@@ -360,9 +396,14 @@
     // 启动浏览时长统计
     checkBrowseDuration();
 
-    // 原有加入购物车逻辑
-    document.querySelector('.detail-btn')?.addEventListener('click', function () {
-        alert('商品已加入购物车！');
+    // 为加入购物车按钮绑定事件
+    document.getElementById('addToCartBtn')?.addEventListener('click', function() {
+        handleAddToCartClick(event, currentTag);
+    });
+
+    // 为购买按钮绑定事件
+    document.getElementById('buyBtn')?.addEventListener('click', function() {
+        handleBuyClick(event, currentTag);
     });
 </script>
 </body>

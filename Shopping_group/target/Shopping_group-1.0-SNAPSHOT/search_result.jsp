@@ -316,8 +316,13 @@
                             <p class="search-desc">${product.description}</p>
                         </div>
                         <div class="search-meta">
-                            <span class="search-category" data-category="${product.category}">${product.category}</span>
-                            <a href="product-detail?id=${product.id}" class="search-link">查看详情</a>
+                            <span class="search-category"
+                                  data-category="${product.category}">${product.category}</span>
+                            <!-- 修改查看详情链接，添加onclick事件 -->
+                            <a href="product-detail?id=${product.id}" class="search-link"
+                               onclick="return handleViewDetailClick(event, '${product.category}', ${product.id})">
+                                查看详情
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -333,10 +338,11 @@
             </div>
             <div class="suggestions">
                 热门搜索：
-                <a href="product-search?keyword=牛奶" onclick="handleCategoryClick(event, 'food'); return false;">牛奶</a>
-                <a href="product-search?keyword=耳机" onclick="handleCategoryClick(event, 'digital'); return false;">耳机</a>
-                <a href="product-search?keyword=口红" onclick="handleCategoryClick(event, 'makeup'); return false;">口红</a>
-                <a href="product-search?keyword=图书" onclick="handleCategoryClick(event, 'book'); return false;">图书</a>
+                <!-- 热门搜索链接保留，但不触发'all'标签加分 -->
+                <a href="product-search?keyword=牛奶">牛奶</a>
+                <a href="product-search?keyword=耳机">耳机</a>
+                <a href="product-search?keyword=口红">口红</a>
+                <a href="product-search?keyword=图书">图书</a>
             </div>
         </div>
     </c:otherwise>
