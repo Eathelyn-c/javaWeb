@@ -23,6 +23,7 @@
             color: #333;
         }
 
+        /* 头部导航栏 */
         .header {
             background-color: #333;
             color: #fff;
@@ -72,6 +73,7 @@
             background-color: #ff4500;
         }
 
+        /* 返回链接 */
         .back-link {
             width: 1200px;
             margin: 20px auto 10px;
@@ -99,6 +101,7 @@
             min-height: 500px;
         }
 
+        /* 左侧图片区域 */
         .detail-img-container {
             flex: 0 0 500px;
             height: 500px;
@@ -192,7 +195,15 @@
             border-radius: 4px;
         }
 
-        .detail-btn {
+        /* 按钮容器 */
+        .detail-btns {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* 加入购物车按钮 */
+        .cart-btn {
             padding: 18px 40px;
             background-color: #ff6700;
             color: #fff;
@@ -203,16 +214,39 @@
             transition: all 0.3s;
             font-weight: 600;
             letter-spacing: 1px;
-            width: 300px;
+            flex: 1;
             box-shadow: 0 4px 12px rgba(255,103,0,0.3);
         }
 
-        .detail-btn:hover {
+        .cart-btn:hover {
             background-color: #ff4500;
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(255,103,0,0.4);
         }
 
+        /* 购买按钮 */
+        .buy-btn {
+            padding: 18px 40px;
+            background-color: #e60012;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            letter-spacing: 1px;
+            flex: 1;
+            box-shadow: 0 4px 12px rgba(230,0,18,0.3);
+        }
+
+        .buy-btn:hover {
+            background-color: #cc0010;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(230,0,18,0.4);
+        }
+
+        /* 无商品信息 */
         .no-product {
             width: 1200px;
             margin: 50px auto;
@@ -262,13 +296,14 @@
             margin: 0 auto;
         }
     </style>
+    <!-- 引入用户兴趣处理脚本 -->
     <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-
+        <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
         <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
             <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
@@ -300,7 +335,12 @@
                         分类：<span class="category-name">${product.category}</span>
                     </div>
                 </div>
-                <button class="detail-btn">加入购物车</button>
+
+                <!-- 按钮区域：加入购物车和购买 -->
+                <div class="detail-btns">
+                    <button class="cart-btn" id="addToCartBtn">加入购物车</button>
+                    <button class="buy-btn" id="buyBtn">立即购买</button>
+                </div>
             </div>
         </div>
     </c:when>
@@ -320,10 +360,14 @@
 </div>
 
 <script>
+
     initLocalStorage();
 
+
+    const currentTag = '${product.category}';
+
     let browseStartTime = new Date().getTime();
-    let isScoreAdded = false;
+    let isBrowseScoreAdded = false;
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -332,13 +376,12 @@
     });
 
     function checkBrowseDuration() {
-        if (isScoreAdded || !${not empty product}) return;
-
+        if (isBrowseScoreAdded || !'${not empty product}') return;
         const duration = (new Date().getTime() - browseStartTime) / 1000;
         if (duration >= 30) {
-            const currentTag = '${product.category}';
+            // 获取当前商品品类（从JSP变量获取）
             addInterestScore(currentTag, 'browse');
-            isScoreAdded = true;
+            isBrowseScoreAdded = true;
         } else {
             setTimeout(checkBrowseDuration, 1000);
         }
@@ -346,8 +389,12 @@
 
     checkBrowseDuration();
 
-    document.querySelector('.detail-btn')?.addEventListener('click', function () {
-        alert('商品已加入购物车！');
+    document.getElementById('addToCartBtn')?.addEventListener('click', function() {
+        handleAddToCartClick(event, currentTag);
+    });
+
+    document.getElementById('buyBtn')?.addEventListener('click', function() {
+        handleBuyClick(event, currentTag);
     });
 </script>
 </body>

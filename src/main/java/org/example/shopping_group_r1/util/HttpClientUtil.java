@@ -1,4 +1,3 @@
-
 package org.example.shopping_group_r1.util;
 
 import java.io.BufferedReader;
@@ -8,11 +7,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-
 public class HttpClientUtil {
     private static final String AD_MANAGEMENT_API = "http://ad-server:8080/api/user-interest";
 
+
     public static String sendPostRequest(String requestBody) throws Exception {
+
         if (AD_MANAGEMENT_API == null || AD_MANAGEMENT_API.isEmpty()) {
             return "{\"code\":200,\"msg\":\"广告服务器未配置，数据已记录\"}";
         }

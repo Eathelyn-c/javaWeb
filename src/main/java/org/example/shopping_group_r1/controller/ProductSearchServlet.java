@@ -15,6 +15,7 @@ public class ProductSearchServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
@@ -30,6 +31,7 @@ public class ProductSearchServlet extends HttpServlet {
 
         request.setAttribute("searchResult", searchResult);
         request.setAttribute("keyword", keyword.trim());
+
         request.getRequestDispatcher("/search_result.jsp").forward(request, response);
     }
 
