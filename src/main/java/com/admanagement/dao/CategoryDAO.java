@@ -17,14 +17,16 @@ public class CategoryDAO {
      */
     public List<Category> getAllCategories() {
         List<Category> categories = new ArrayList<>();
-        String sql = "SELECT * FROM categories ORDER BY category_name";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
+        String sql = "SELECT * FROM categories ORDER BY category_id ASC";
+        try (Connection conn = com.admanagement.util.DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
             while (rs.next()) {
-                categories.add(extractCategoryFromResultSet(rs));
+                Category cat = new Category();
+                cat.setCategoryId(rs.getInt("category_id"));
+                cat.setCategoryName(rs.getString("category_name"));
+                cat.setDescription(rs.getString("description"));
+                categories.add(cat);
             }
         } catch (SQLException e) {
             e.printStackTrace();

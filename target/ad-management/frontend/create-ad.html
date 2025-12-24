@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布广告 - 广告管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">广告管理系统</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">首页</a></li>
+                <li><a href="dashboard.html" class="nav-link">我的广告</a></li>
+                <li><a href="create-ad.html" class="nav-link active">发布广告</a></li>
+                <li><span id="username" class="nav-username"></span></li>
+                <li><a href="#" id="logoutBtn" class="nav-link">退出</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="create-ad-form">
+            <h1>发布新广告</h1>
+            
+            <form id="createAdForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title">广告标题 *</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">广告描述</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">广告类别 *</label>
+                        <select id="category" name="category" required>
+                            <option value="">请选择类别</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adType">广告形式 *</label>
+                        <select id="adType" name="adType" required>
+                            <option value="">请选择形式</option>
+                            <option value="text">纯文字</option>
+                            <option value="image">纯图片</option>
+                            <option value="video">纯视频</option>
+                            <option value="text_image">文字+图片</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="textContentGroup" class="form-group" style="display: none;">
+                    <label for="textContent">文字内容 *</label>
+                    <textarea id="textContent" name="textContent" rows="4"></textarea>
+                </div>
+                
+                <div id="imageGroup" class="form-group" style="display: none;">
+                    <label for="image">上传图片 *</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                    <small>支持 JPG, PNG, GIF, WebP 格式，最大 10MB</small>
+                    <div id="imagePreview" class="file-preview"></div>
+                </div>
+                
+                <div id="videoGroup" class="form-group" style="display: none;">
+                    <label for="video">上传视频 *</label>
+                    <input type="file" id="video" name="video" accept="video/*">
+                    <small>支持 MP4, AVI, MOV, WebM 格式，最大 10MB</small>
+                    <div id="videoPreview" class="file-preview"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetUrl">目标链接</label>
+                    <input type="url" id="targetUrl" name="targetUrl" placeholder="https://example.com">
+                    <small>点击广告后跳转的网址</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">开始时间</label>
+                        <input type="datetime-local" id="startDate" name="startDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endDate">结束时间</label>
+                        <input type="datetime-local" id="endDate" name="endDate">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">发布广告</button>
+                    <a href="dashboard.html" class="btn btn-secondary">取消</a>
+                </div>
+            </form>
+            
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/create-ad.js"></script>
+</body>
+</html>

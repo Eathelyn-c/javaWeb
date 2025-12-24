@@ -11,3 +11,9 @@ CREATE TABLE IF NOT EXISTS user_behaviors (
     INDEX idx_platform (platform),
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户行为记录表';
+
+-- 1. 添加唯一索引
+ALTER TABLE user_behaviors ADD UNIQUE INDEX uk_user_tag (anonymous_user_id, tag);
+
+-- 2. 添加更新时间字段
+ALTER TABLE user_behaviors ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;

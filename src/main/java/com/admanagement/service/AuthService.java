@@ -120,7 +120,7 @@ public class AuthService {
             result.put("message", "Invalid username or password");
             return result;
         }
-        
+     
         // Verify password
         if (!BCrypt.checkpw(password, user.getPasswordHash())) {
             result.put("success", false);
