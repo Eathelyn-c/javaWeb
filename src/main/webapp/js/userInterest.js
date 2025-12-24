@@ -1,4 +1,5 @@
 
+
 function generateUUID() {
     return 'user_' + ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -17,31 +18,34 @@ function initLocalStorage() {
     }
 }
 
+
 function addInterestScore(tag, behavior) {
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
+
     const weightMap = {
+        buy: 5,
+        addToCart: 4,
+        viewDetail: 3,
         clickCategory: 3,
         search: 2,
         browse: 1
     };
-    const addScore = weightMap[behavior] || 0;
 
+    const addScore = weightMap[behavior] || 0;
 
     scores[tag] = (scores[tag] || 0) + addScore;
     localStorage.setItem('userInterestScores', JSON.stringify(scores));
+    console.log(`品类[${tag}] ${behavior}行为 +${addScore}分，总分=${scores[tag]}`);
 
-    console.log('品类[' + tag + ']分数更新：' + scores[tag] + '（+' + addScore + '）');
-    console.log('当前所有分数：', scores);
 
     sendInterestData();
     return true;
 }
 
-
 function sendInterestData() {
     const anonymousUserId = localStorage.getItem('anonymousUserId');
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
-    const platform = 'shopping';
+    const platform = 'shopping'; // 固定平台标识
 
     const requestData = Object.entries(scores).map(([Tag, score]) => ({
         anonymousUserId,
@@ -75,7 +79,7 @@ function sendInterestData() {
         .catch(err => console.error('兴趣数据发送失败：', err));
 }
 
-
+// 5. 处理搜索表单提交事件
 function handleSearchSubmit(event) {
     event.preventDefault();
 
@@ -93,12 +97,10 @@ function handleSearchSubmit(event) {
     return false;
 }
 
-
 function handleCategoryClick(event, tag) {
-    event.preventDefault();
+    event.preventDefault(); // 阻止默认链接跳转
     const link = event.target.closest('a');
     const url = link.getAttribute('href');
-
 
     addInterestScore(tag, 'clickCategory');
 
@@ -108,7 +110,20 @@ function handleCategoryClick(event, tag) {
 }
 
 
+function handleViewDetailClick(event, tag, productId) {
+    event.preventDefault();
+    const link = event.target.closest('a');
+    const url = link.getAttribute('href');
+
+    addInterestScore(tag, 'viewDetail');
+
+    setTimeout(() => {
+        window.location.href = url;
+    }, 100);
+}
+
 function processSearchResults() {
+
     const searchResults = document.querySelectorAll('.search-category');
     if (searchResults.length === 0) return;
 
@@ -117,11 +132,17 @@ function processSearchResults() {
     const categoryCounts = {};
     searchResults.forEach(element => {
         const category = element.textContent.trim();
+
+        if (category.toLowerCase() === 'all') {
+            console.log('跳过all标签，不记录分数');
+            return;
+        }
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
 
     for (const [category, count] of Object.entries(categoryCounts)) {
         const scoreToAdd = Math.min(count, 10);
+
         updateCategoryScore(category, scoreToAdd, 'search');
     }
 
@@ -132,10 +153,13 @@ function processSearchResults() {
     }, 500);
 }
 
-
 function updateCategoryScore(tag, score, behavior) {
     const scores = JSON.parse(localStorage.getItem('userInterestScores'));
+
     const weightMap = {
+        buy: 5,
+        addToCart: 4,
+        viewDetail: 3,
         clickCategory: 3,
         search: 2,
         browse: 1
@@ -144,7 +168,31 @@ function updateCategoryScore(tag, score, behavior) {
 
     scores[tag] = (scores[tag] || 0) + (addScore * score);
     localStorage.setItem('userInterestScores', JSON.stringify(scores));
-    console.log('品类[' + tag + ']批量更新：增加' + (addScore * score) + '分，总分=' + scores[tag]);
+    console.log(`品类[${tag}]批量更新：增加${(addScore * score)}分，总分=${scores[tag]}`);
+}
+
+function handleBuyClick(event, tag) {
+    event.preventDefault();
+
+    const success = addInterestScore(tag, 'buy');
+
+    if (success) {
+        alert('购买成功！感谢您的购买，订单已生成。');
+
+
+    }
+    return false;
+}
+
+function handleAddToCartClick(event, tag) {
+    event.preventDefault();
+
+    const success = addInterestScore(tag, 'addToCart');
+
+    if (success) {
+        alert('商品已成功加入购物车！');
+    }
+    return false;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

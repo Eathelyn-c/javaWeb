@@ -1,4 +1,3 @@
-
 package org.example.shopping_group_r1.model;
 
 import java.math.BigDecimal;

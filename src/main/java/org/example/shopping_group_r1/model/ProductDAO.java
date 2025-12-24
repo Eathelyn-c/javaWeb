@@ -1,4 +1,3 @@
-// ProductDAO.java - 商品数据访问对象
 package org.example.shopping_group_r1.model;
 
 import org.example.shopping_group_r1.util.DBUtil;
@@ -117,7 +116,6 @@ public class ProductDAO {
         }
         return product;
     }
-
 
     public List<Product> searchProductsByKeyword(String keyword) {
         List<Product> productList = new ArrayList<>();

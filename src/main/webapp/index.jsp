@@ -68,7 +68,7 @@
             background-color: #ff4500;
         }
 
-
+        /* 分类导航 */
         .category-nav {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -102,7 +102,7 @@
             color: #fff;
         }
 
-
+        /* 商品列表容器 */
         .container {
             width: 1200px;
             margin: 0 auto;
@@ -112,7 +112,7 @@
             padding-bottom: 50px;
         }
 
-
+        /* 商品卡片 */
         .product-card {
             background-color: #fff;
             border-radius: 8px;
@@ -190,7 +190,7 @@
             background-color: #ff4500;
         }
 
-
+        /* 页脚 */
         .footer {
             background-color: #333;
             color: #fff;
@@ -204,13 +204,14 @@
             margin: 0 auto;
         }
     </style>
+    <!-- 引入用户兴趣处理脚本 -->
     <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-
+        <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
         <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
             <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
@@ -221,10 +222,11 @@
 <div class="category-nav">
     <div class="category-container">
         <ul class="category-list">
+            <!-- 删除"全部商品"的加分逻辑，只保留导航功能 -->
             <li class="category-item">
-                <a href="product-list" class="${empty currentCategory ? 'active' : ''}"
-                   onclick="addInterestScore('all', 'clickCategory')">全部商品</a>
+                <a href="product-list" class="${empty currentCategory ? 'active' : ''}">全部商品</a>
             </li>
+            <!-- 其他分类保持不变 -->
             <li class="category-item">
                 <a href="product-list?category=food" class="${currentCategory == 'food' ? 'active' : ''}"
                    onclick="addInterestScore('food', 'clickCategory')">食品</a>
@@ -270,7 +272,11 @@
                         <h3 class="product-name">${product.name}</h3>
                         <div class="product-price">¥${product.price}</div>
                         <p class="product-desc">${product.description}</p>
-                        <a href="product-detail?id=${product.id}" class="product-link">查看详情</a>
+                        <!-- 修改查看详情链接，添加onclick事件 -->
+                        <a href="product-detail?id=${product.id}" class="product-link"
+                           onclick="return handleViewDetailClick(event, '${product.category}', ${product.id})">
+                            查看详情
+                        </a>
                     </div>
                 </div>
             </c:forEach>
@@ -288,7 +294,6 @@
         <p>© 2025 购物商城 版权所有</p>
     </div>
 </div>
-
 
 <script>
     window.onload = function() {

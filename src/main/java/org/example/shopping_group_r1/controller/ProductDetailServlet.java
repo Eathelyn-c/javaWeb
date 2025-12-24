@@ -1,4 +1,3 @@
-
 package org.example.shopping_group_r1.controller;
 
 import org.example.shopping_group_r1.model.Product;
@@ -15,6 +14,7 @@ public class ProductDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
@@ -41,6 +41,7 @@ public class ProductDetailServlet extends HttpServlet {
         }
 
         request.setAttribute("product", product);
+
         request.getRequestDispatcher("/product_detail.jsp").forward(request, response);
     }
 }
