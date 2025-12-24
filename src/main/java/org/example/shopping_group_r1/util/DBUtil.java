@@ -1,3 +1,4 @@
+
 package org.example.shopping_group_r1.util;
 
 import java.sql.Connection;
@@ -14,13 +15,15 @@ public class DBUtil {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.out.println("MySQL驱动加载失败！");
+            System.out.println("MySQL驱动加载失败！请检查是否引入mysql-connector-java依赖");
         }
     }
+
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
+
 
     public static void close(AutoCloseable... resources) {
         for (AutoCloseable res : resources) {

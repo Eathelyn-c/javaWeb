@@ -68,7 +68,7 @@
             background-color: #ff4500;
         }
 
-        /* 分类导航 */
+
         .category-nav {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -102,7 +102,7 @@
             color: #fff;
         }
 
-        /* 商品列表容器 */
+
         .container {
             width: 1200px;
             margin: 0 auto;
@@ -112,7 +112,7 @@
             padding-bottom: 50px;
         }
 
-        /* 商品卡片 */
+
         .product-card {
             background-color: #fff;
             border-radius: 8px;
@@ -190,7 +190,7 @@
             background-color: #ff4500;
         }
 
-        /* 页脚 */
+
         .footer {
             background-color: #333;
             color: #fff;
@@ -204,13 +204,15 @@
             margin: 0 auto;
         }
     </style>
+    <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <form action="product-search" method="post" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="输入商品名称搜索...">
+
+        <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
+            <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
         </form>
     </div>
@@ -220,36 +222,36 @@
     <div class="category-container">
         <ul class="category-list">
             <li class="category-item">
-                <a href="product-list"
-                   class="${empty currentCategory ? 'active' : ''}">全部商品</a>
+                <a href="product-list" class="${empty currentCategory ? 'active' : ''}"
+                   onclick="addInterestScore('all', 'clickCategory')">全部商品</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=food"
-                   class="${currentCategory == 'food' ? 'active' : ''}">食品</a>
+                <a href="product-list?category=food" class="${currentCategory == 'food' ? 'active' : ''}"
+                   onclick="addInterestScore('food', 'clickCategory')">食品</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=makeup"
-                   class="${currentCategory == 'makeup' ? 'active' : ''}">美妆</a>
+                <a href="product-list?category=makeup" class="${currentCategory == 'makeup' ? 'active' : ''}"
+                   onclick="addInterestScore('makeup', 'clickCategory')">美妆</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=digital"
-                   class="${currentCategory == 'digital' ? 'active' : ''}">数码</a>
+                <a href="product-list?category=digital" class="${currentCategory == 'digital' ? 'active' : ''}"
+                   onclick="addInterestScore('digital', 'clickCategory')">数码</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=sport"
-                   class="${currentCategory == 'sport' ? 'active' : ''}">运动</a>
+                <a href="product-list?category=sport" class="${currentCategory == 'sport' ? 'active' : ''}"
+                   onclick="addInterestScore('sport', 'clickCategory')">运动</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=clothes"
-                   class="${currentCategory == 'clothes' ? 'active' : ''}">服装</a>
+                <a href="product-list?category=clothes" class="${currentCategory == 'clothes' ? 'active' : ''}"
+                   onclick="addInterestScore('clothes', 'clickCategory')">服装</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=book"
-                   class="${currentCategory == 'book' ? 'active' : ''}">图书</a>
+                <a href="product-list?category=book" class="${currentCategory == 'book' ? 'active' : ''}"
+                   onclick="addInterestScore('book', 'clickCategory')">图书</a>
             </li>
             <li class="category-item">
-                <a href="product-list?category=others"
-                   class="${currentCategory == 'others' ? 'active' : ''}">其他</a>
+                <a href="product-list?category=others" class="${currentCategory == 'others' ? 'active' : ''}"
+                   onclick="addInterestScore('others', 'clickCategory')">其他</a>
             </li>
         </ul>
     </div>
@@ -261,9 +263,8 @@
             <c:forEach var="product" items="${productList}">
                 <div class="product-card">
                     <div class="product-img-container">
-                        <img src="images/${product.imageUrl}"
-                             alt="${product.name}"
-                             class="product-img">
+                        <img src="${pageContext.request.contextPath}/images/${product.imageUrl}"
+                             alt="${product.name}" class="product-img">
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
@@ -287,5 +288,12 @@
         <p>© 2025 购物商城 版权所有</p>
     </div>
 </div>
+
+
+<script>
+    window.onload = function() {
+        initLocalStorage();
+    };
+</script>
 </body>
 </html>

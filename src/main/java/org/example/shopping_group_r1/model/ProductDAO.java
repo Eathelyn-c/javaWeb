@@ -1,3 +1,4 @@
+// ProductDAO.java - 商品数据访问对象
 package org.example.shopping_group_r1.model;
 
 import org.example.shopping_group_r1.util.DBUtil;
@@ -8,11 +9,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 public class ProductDAO {
 
-    // 1. 查询所有商品（首页用）
     public List<Product> findAllProducts() {
         List<Product> productList = new ArrayList<>();
         String sql = "SELECT * FROM products ORDER BY id DESC";
@@ -49,7 +47,6 @@ public class ProductDAO {
         return productList;
     }
 
-    // 2. 按类别查询商品
     public List<Product> findProductsByCategory(String category) {
         List<Product> productList = new ArrayList<>();
         String sql = "SELECT * FROM products WHERE category = ? ORDER BY id DESC";
@@ -86,7 +83,6 @@ public class ProductDAO {
         return productList;
     }
 
-    // 3. 按ID查询商品
     public Product findProductById(Integer id) {
         Product product = null;
         String sql = "SELECT * FROM products WHERE id = ?";
@@ -122,7 +118,7 @@ public class ProductDAO {
         return product;
     }
 
-    // 4. 按关键词搜索商品
+
     public List<Product> searchProductsByKeyword(String keyword) {
         List<Product> productList = new ArrayList<>();
         String sql = "SELECT * FROM products WHERE name LIKE ? ORDER BY id DESC";
