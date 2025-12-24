@@ -1,15 +1,16 @@
+
 package org.example.shopping_group_r1.model;
 
 import java.math.BigDecimal;
 
 public class Product {
-    private Integer id;          // 商品ID（对应id）
-    private String name;         // 商品名称（对应name）
-    private String category;     // 类别（对应category）
-    private BigDecimal price;    // 价格（对应price）
-    private String description;  // 描述（对应description）
-    private String imageUrl;     // 图片文件名（对应image_url）
-    private Integer stock;       // 库存（对应stock）
+    private Integer id;
+    private String name;
+    private String category;
+    private BigDecimal price;
+    private String description;
+    private String imageUrl;
+    private Integer stock;
 
     public Product() {}
 

@@ -1,4 +1,6 @@
+
 package org.example.shopping_group_r1.controller;
+
 import org.example.shopping_group_r1.model.Product;
 import org.example.shopping_group_r1.model.ProductDAO;
 import jakarta.servlet.ServletException;
@@ -14,7 +16,6 @@ public class ProductListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
@@ -30,7 +31,6 @@ public class ProductListServlet extends HttpServlet {
 
         request.setAttribute("productList", productList);
         request.setAttribute("currentCategory", category);
-
         request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
 }

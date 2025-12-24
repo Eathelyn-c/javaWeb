@@ -23,7 +23,6 @@
             color: #333;
         }
 
-        /* 头部导航栏 */
         .header {
             background-color: #333;
             color: #fff;
@@ -73,7 +72,6 @@
             background-color: #ff4500;
         }
 
-        /* 返回链接 */
         .back-link {
             width: 1200px;
             margin: 20px auto 10px;
@@ -89,7 +87,6 @@
             color: #ff6700;
         }
 
-        /* 商品详情容器 - 图片在左，文字在右 */
         .detail-container {
             width: 1200px;
             margin: 0 auto 40px;
@@ -102,7 +99,6 @@
             min-height: 500px;
         }
 
-        /* 左侧图片区域 */
         .detail-img-container {
             flex: 0 0 500px;
             height: 500px;
@@ -123,7 +119,6 @@
             border-radius: 4px;
         }
 
-        /* 右侧商品信息 */
         .detail-info {
             flex: 1;
             display: flex;
@@ -218,7 +213,6 @@
             box-shadow: 0 6px 15px rgba(255,103,0,0.4);
         }
 
-        /* 无商品信息 */
         .no-product {
             width: 1200px;
             margin: 50px auto;
@@ -268,13 +262,15 @@
             margin: 0 auto;
         }
     </style>
+    <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <form action="product-search" method="post" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="输入商品名称搜索...">
+
+        <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
+            <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>
         </form>
     </div>
@@ -288,9 +284,8 @@
     <c:when test="${not empty product}">
         <div class="detail-container">
             <div class="detail-img-container">
-                <img src="images/${product.imageUrl}"
-                     alt="${product.name}"
-                     class="detail-img">
+                <img src="${pageContext.request.contextPath}/images/${product.imageUrl}"
+                     alt="${product.name}" class="detail-img">
             </div>
 
             <div class="detail-info">
@@ -325,6 +320,32 @@
 </div>
 
 <script>
+    initLocalStorage();
+
+    let browseStartTime = new Date().getTime();
+    let isScoreAdded = false;
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            browseStartTime = new Date().getTime();
+        }
+    });
+
+    function checkBrowseDuration() {
+        if (isScoreAdded || !${not empty product}) return;
+
+        const duration = (new Date().getTime() - browseStartTime) / 1000;
+        if (duration >= 30) {
+            const currentTag = '${product.category}';
+            addInterestScore(currentTag, 'browse');
+            isScoreAdded = true;
+        } else {
+            setTimeout(checkBrowseDuration, 1000);
+        }
+    }
+
+    checkBrowseDuration();
+
     document.querySelector('.detail-btn')?.addEventListener('click', function () {
         alert('商品已加入购物车！');
     });

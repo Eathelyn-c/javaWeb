@@ -134,7 +134,7 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        /* 左侧图片区域 */
+
         .search-img-container {
             flex: 0 0 250px;
             height: 250px;
@@ -153,7 +153,7 @@
             border-radius: 6px;
         }
 
-        /* 右侧商品信息 */
+
         .search-info {
             flex: 1;
             padding: 30px;
@@ -216,7 +216,6 @@
             box-shadow: 0 4px 8px rgba(255,103,0,0.3);
         }
 
-        /* 无搜索结果提示 */
         .no-result {
             width: 1200px;
             margin: 50px auto;
@@ -260,7 +259,6 @@
             text-decoration: underline;
         }
 
-        /* 页脚 */
         .footer {
             background-color: #333;
             color: #fff;
@@ -273,13 +271,15 @@
             margin: 0 auto;
         }
     </style>
+    <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <form action="product-search" method="post" class="search-form">
-            <input type="text" name="keyword" class="search-input"
+
+        <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
+            <input type="text" name="keyword" id="searchKeyword" class="search-input"
                    placeholder="输入商品名称搜索..." value="${keyword}">
             <button type="submit" class="search-btn">搜索</button>
         </form>
@@ -302,9 +302,8 @@
                 <div class="search-item">
                     <!-- 左侧：商品图片 -->
                     <div class="search-img-container">
-                        <img src="images/${product.imageUrl}"
-                             alt="${product.name}"
-                             class="search-img">
+                        <img src="${pageContext.request.contextPath}/images/${product.imageUrl}"
+                             alt="${product.name}" class="search-img">
                     </div>
 
                     <div class="search-info">
@@ -314,7 +313,7 @@
                             <p class="search-desc">${product.description}</p>
                         </div>
                         <div class="search-meta">
-                            <span class="search-category">${product.category}</span>
+                            <span class="search-category" data-category="${product.category}">${product.category}</span>
                             <a href="product-detail?id=${product.id}" class="search-link">查看详情</a>
                         </div>
                     </div>
@@ -327,14 +326,14 @@
             <h2>没有找到相关商品</h2>
             <p>没有找到与"<span class="keyword">${keyword}</span>"相关的商品，请更换关键词重试！</p>
             <div style="margin-top: 30px;">
-                <a href="" style="display: inline-block; padding: 12px 30px; background-color: #ff6700; color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px;">返回首页浏览所有商品</a>
+                <a href="product-list" style="display: inline-block; padding: 12px 30px; background-color: #ff6700; color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px;">返回首页浏览所有商品</a>
             </div>
             <div class="suggestions">
                 热门搜索：
-                <a href="product-search?keyword=牛奶">牛奶</a>
-                <a href="product-search?keyword=耳机">耳机</a>
-                <a href="product-search?keyword=口红">口红</a>
-                <a href="product-search?keyword=图书">图书</a>
+                <a href="product-search?keyword=牛奶" onclick="handleCategoryClick(event, 'food'); return false;">牛奶</a>
+                <a href="product-search?keyword=耳机" onclick="handleCategoryClick(event, 'digital'); return false;">耳机</a>
+                <a href="product-search?keyword=口红" onclick="handleCategoryClick(event, 'makeup'); return false;">口红</a>
+                <a href="product-search?keyword=图书" onclick="handleCategoryClick(event, 'book'); return false;">图书</a>
             </div>
         </div>
     </c:otherwise>
@@ -345,5 +344,15 @@
         <p>© 2025 购物商城 版权所有</p>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initLocalStorage();
+
+        setTimeout(function() {
+            processSearchResults();
+        }, 1000);
+    });
+</script>
 </body>
 </html>
