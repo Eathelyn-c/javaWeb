@@ -15,12 +15,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             // Save token and user info
             setAuthToken(data.data.token);
             setUserInfo(data.data);
-            
+
             showMessage('message', '登录成功！正在跳转...', 'success');
             
             // Redirect to dashboard
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'frontend/index.html';
             }, 1000);
         } else {
             showMessage('message', data?.message || '登录失败', 'error');

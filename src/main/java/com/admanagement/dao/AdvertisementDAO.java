@@ -51,7 +51,7 @@ public class AdvertisementDAO {
      */
     public List<Advertisement> getAdvertisementsByTagAndScore(String tag, int limit) {
         List<Advertisement> ads = new ArrayList<>();
-        String sql = "SELECT a.*, c.category_name, u.username, s.clicks " +
+        String sql = "SELECT a.*, c.category_name, u.username, s.click_count AS clicks " +
                 "FROM advertisements a " +
                 "JOIN categories c ON a.category_id = c.category_id " +
                 "JOIN users u ON a.user_id = u.user_id " +

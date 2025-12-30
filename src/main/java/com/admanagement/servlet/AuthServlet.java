@@ -29,7 +29,7 @@ public class AuthServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        System.out.println("进入了处理方法");
         String pathInfo = request.getPathInfo();
         
         if (pathInfo == null) {

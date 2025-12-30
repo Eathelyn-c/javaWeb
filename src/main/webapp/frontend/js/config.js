@@ -1,5 +1,6 @@
 // API Configuration
-const API_BASE_URL = '/ad-management/api';
+const API_BASE_URL = window.location.origin + '/ad-management/api';
+
 
 // API Endpoints
 const API = {
@@ -97,8 +98,8 @@ async function apiRequest(url, options = {}) {
     
     // Check if unauthorized
     if (response.status === 401) {
-        logout();
-        return null;
+        //logout();
+        //return null;
     }
     
     const data = await response.json();

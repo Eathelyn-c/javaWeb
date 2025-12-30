@@ -23,16 +23,15 @@
         </cookie-config>
     </session-config>
 
-    <!-- Error Pages -->
+    <!-- Error Pages
     <error-page>
         <error-code>404</error-code>
         <location>/frontend/error.html</location>
     </error-page>
-    
     <error-page>
         <error-code>500</error-code>
         <location>/frontend/error.html</location>
-    </error-page>
+    </error-page>-->
 
     <!-- MIME Type Mappings -->
     <mime-mapping>

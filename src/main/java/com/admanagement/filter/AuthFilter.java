@@ -15,20 +15,22 @@ import java.util.Set;
 /**
  * Authentication filter to validate JWT tokens
  */
-@WebFilter("/*")
+@WebFilter("/api/*")
 public class AuthFilter implements Filter {
     
     // Paths that don't require authentication
     private static final Set<String> PUBLIC_PATHS = new HashSet<>(Arrays.asList(
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/ads/view",
-        "/api/ads/click",
-        "/api/ads/active",
-        "/api/categories",
-        "/api/behavior/track",
-        "/api/behavior/stats"
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/ads/view",
+            "/api/ads/click",
+            "/api/ads/active",
+            "/api/categories",
+            "/api/behavior/track",
+            "/api/behavior/stats",
+            "/api/external/api/getAds"
     ));
+
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -53,11 +55,21 @@ public class AuthFilter implements Filter {
             httpResponse.setStatus(HttpServletResponse.SC_OK);
             return;
         }
-        
-        String path = httpRequest.getRequestURI();
+// 1. 获取完整的 URI (例如: /ad-management/api/auth/login)
+        String uri = httpRequest.getRequestURI();
+// 2. 获取 ContextPath (例如: /ad-management)
         String contextPath = httpRequest.getContextPath();
-        String relativePath = path.substring(contextPath.length());
-        
+
+// 3. 截取掉 ContextPath，得到纯净的相对路径
+        String relativePath;
+        if (contextPath.length() > 0 && uri.startsWith(contextPath)) {
+            relativePath = uri.substring(contextPath.length());
+        } else {
+            relativePath = uri;
+        }
+
+       System.out.println("DEBUG: 当前请求的相对路径是 -> [" + relativePath + "]");
+
         // Check if path is public or is a static resource
         if (isPublicPath(relativePath) || isStaticResource(relativePath)) {
             chain.doFilter(request, response);
@@ -102,13 +114,16 @@ public class AuthFilter implements Filter {
      * Check if path is public (doesn't require authentication)
      */
     private boolean isPublicPath(String path) {
-        // Allow all /api/behavior/* paths for anonymous access
-        if (path.startsWith("/api/behavior/")) {
+
+        String normalizedPath = path.replaceAll("/+", "/");
+
+        if (normalizedPath.startsWith("/api/behavior/")) {
             return true;
         }
-        
+
         for (String publicPath : PUBLIC_PATHS) {
-            if (path.startsWith(publicPath)) {
+
+            if (normalizedPath.equals(publicPath) || normalizedPath.startsWith(publicPath + "/")) {
                 return true;
             }
         }

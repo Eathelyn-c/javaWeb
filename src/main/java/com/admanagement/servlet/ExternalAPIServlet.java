@@ -26,7 +26,7 @@ import java.util.Properties;
  * 1. score = 0 -> 获取广告列表（精准推荐 + 历史偏好 + 热门兜底）
  * 2. score > 0 -> 记录用户交互行为（结算模式，不返回广告）
  */
-@WebServlet("/external/api/getAds")
+@WebServlet("/api/external/api/getAds")
 public class ExternalAPIServlet extends HttpServlet {
 
     private AdService adService;
@@ -51,13 +51,6 @@ public class ExternalAPIServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // 1. 安全验证
-        String key = request.getHeader("X-API-Key");
-        if (apiKey != null && (key == null || !key.equals(apiKey))) {
-            ResponseUtil.sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid API Key");
-            return;
-        }
 
         // 2. 解析 JSON 请求体
         StringBuilder sb = new StringBuilder();
@@ -98,23 +91,28 @@ public class ExternalAPIServlet extends HttpServlet {
             return; // 结算模式不执行后续广告查询，直接返回
         }
 
-        // 场景 B: 广告拉取模式 (score == 0)
-        // 调用 Service 层的多级推荐逻辑
+// 场景 B: 广告拉取模式 (score == 0)
         List<Advertisement> ads = adService.getAdsByWorkFlow(anonymousUserId, tag, score, limit);
 
-        // 构建响应
+// 根据平台类型调整响应
         JsonArray adArray = new JsonArray();
         if (ads != null) {
             for (Advertisement ad : ads) {
                 JsonObject adJson = new JsonObject();
-                adJson.addProperty("adId", ad.getAdId());
-                adJson.addProperty("title", ad.getTitle());
-                adJson.addProperty("description", ad.getDescription());
-                adJson.addProperty("textContent", ad.getTextContent());
-                adJson.addProperty("imageUrl", ad.getImageUrl());
-                adJson.addProperty("videoUrl", ad.getVideoUrl());
-                adJson.addProperty("targetUrl", ad.getTargetUrl());
-                adJson.addProperty("category", ad.getCategoryName());
+                if ("news".equalsIgnoreCase(platform)) { // 如果是新闻平台，只返回图片 URL
+                    adJson.addProperty("imageUrl", ad.getImageUrl());
+                } else if ("video".equalsIgnoreCase(platform)) { // 如果是视频平台，只返回视频 URL
+                    adJson.addProperty("videoUrl", ad.getVideoUrl());
+                } else { // 默认返回所有字段
+                    adJson.addProperty("adId", ad.getAdId());
+                    adJson.addProperty("title", ad.getTitle());
+                    adJson.addProperty("description", ad.getDescription());
+                    adJson.addProperty("textContent", ad.getTextContent());
+                    adJson.addProperty("imageUrl", ad.getImageUrl());
+                    adJson.addProperty("videoUrl", ad.getVideoUrl());
+                    adJson.addProperty("targetUrl", ad.getTargetUrl());
+                    adJson.addProperty("category", ad.getCategoryName());
+                }
                 adArray.add(adJson);
             }
         }
