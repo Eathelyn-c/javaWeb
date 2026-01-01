@@ -36,7 +36,6 @@ public class ExternalAPIServlet extends HttpServlet {
     public void init() throws ServletException {
         adService = new AdService();
 
-        // 加载 API Key 验证
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             Properties prop = new Properties();
             if (input != null) {
@@ -52,13 +51,11 @@ public class ExternalAPIServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 2. 解析 JSON 请求体
+        // 读取请求体
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
+            while ((line = reader.readLine()) != null) sb.append(line);
         }
 
         JsonObject json;
@@ -69,18 +66,22 @@ public class ExternalAPIServlet extends HttpServlet {
             return;
         }
 
-        // 提取核心参数
+        // 参数解析
         String anonymousUserId = json.has("anonymousUserId") ? json.get("anonymousUserId").getAsString() : null;
         String tag = json.has("tag") ? json.get("tag").getAsString() : null;
         int score = json.has("score") ? json.get("score").getAsInt() : 0;
         String platform = json.has("platform") ? json.get("platform").getAsString() : "external";
         int limit = json.has("limit") ? json.get("limit").getAsInt() : 5;
 
-        // --- 核心工作流处理 ---
+        // 平台限制 video / news / shopping
+        if(!platform.equals("video") && !platform.equals("news") && !platform.equals("shopping")) {
+            ResponseUtil.sendError(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "Invalid platform. Allowed: video, news, shopping");
+            return;
+        }
 
-        // 场景 A: 行为结算模式 (score > 0)
+        // score > 0 行为结算模式
         if (score > 0 && anonymousUserId != null && tag != null) {
-            // 构造行为对象并记录
             UserBehavior behavior = new UserBehavior(anonymousUserId, tag, score, platform);
             boolean recorded = adService.recordUserBehavior(behavior);
 
@@ -88,40 +89,46 @@ public class ExternalAPIServlet extends HttpServlet {
             result.addProperty("success", recorded);
             result.addProperty("message", "Settlement completed. Behavior recorded.");
             ResponseUtil.sendSuccess(response, result);
-            return; // 结算模式不执行后续广告查询，直接返回
+            return;
         }
 
-// 场景 B: 广告拉取模式 (score == 0)
+        // score = 0 拉取广告
         List<Advertisement> ads = adService.getAdsByWorkFlow(anonymousUserId, tag, score, limit);
 
-// 根据平台类型调整响应
         JsonArray adArray = new JsonArray();
         if (ads != null) {
             for (Advertisement ad : ads) {
                 JsonObject adJson = new JsonObject();
-                if ("news".equalsIgnoreCase(platform)) { // 如果是新闻平台，只返回图片 URL
-                    adJson.addProperty("imageUrl", ad.getImageUrl());
-                } else if ("video".equalsIgnoreCase(platform)) { // 如果是视频平台，只返回视频 URL
-                    adJson.addProperty("videoUrl", ad.getVideoUrl());
-                } else { // 默认返回所有字段
-                    adJson.addProperty("adId", ad.getAdId());
-                    adJson.addProperty("title", ad.getTitle());
-                    adJson.addProperty("description", ad.getDescription());
-                    adJson.addProperty("textContent", ad.getTextContent());
-                    adJson.addProperty("imageUrl", ad.getImageUrl());
-                    adJson.addProperty("videoUrl", ad.getVideoUrl());
-                    adJson.addProperty("targetUrl", ad.getTargetUrl());
-                    adJson.addProperty("category", ad.getCategoryName());
+
+                // 平台决定返回资源类型
+                String url = null;
+                if(platform.equals("video")) {
+                    url = ad.getVideoUrl();       // 只传视频
+                } else {
+                    url = ad.getImageUrl();       // 只传图片
                 }
-                adArray.add(adJson);
+
+                if (url != null && !url.trim().isEmpty()) {
+                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                        String baseUrl = request.getScheme() + "://" + request.getServerName();
+                        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+                            baseUrl += ":" + request.getServerPort();
+                        }
+                        String contextPath = request.getContextPath();
+                        url = baseUrl + (url.startsWith("/") ? contextPath + url : contextPath + "/" + url);
+                    }
+                    adJson.addProperty("url", url);
+                    adArray.add(adJson);
+                }
             }
         }
 
+        // 返回内容
         JsonObject result = new JsonObject();
-        result.addProperty("success", true);
-        result.addProperty("count", adArray.size());
+        result.addProperty("code", 200);
         result.add("ads", adArray);
 
-        ResponseUtil.sendSuccess(response, result);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(result.toString());
     }
 }

@@ -48,6 +48,7 @@ public class AdService {
     public List<Advertisement> getAdsByWorkFlow(String userId, String tag, int score, int limit) {
         // 场景 A: 结算模式 (score > 0) -> 不返回广告
         if (score > 0) {
+            System.out.println("[AdService] 结算模式，不返回广告。userId=" + userId + ", tag=" + tag + ", score=" + score);
             return new ArrayList<>();
         }
 
@@ -56,21 +57,46 @@ public class AdService {
         // 记忆功能：如果没传标签，查历史最高分标签
         if (targetTag == null || targetTag.trim().isEmpty()) {
             targetTag = behaviorDAO.getMostInterestedTag(userId);
+            System.out.println("[AdService] 标签为空，查询历史标签结果: " + targetTag);
         }
 
+        System.out.println("[AdService] 开始获取广告。userId=" + userId + ", targetTag=" + targetTag + ", limit=" + limit);
         List<Advertisement> finalAds = new ArrayList<>();
+        
         // 优先精准匹配
         if (targetTag != null && !targetTag.trim().isEmpty()) {
             List<Advertisement> matched = adDAO.getAdvertisementsByTagAndScore(targetTag, limit);
-            if (matched != null) finalAds.addAll(matched);
+            System.out.println("[AdService] 标签匹配查询结果数量: " + (matched != null ? matched.size() : 0));
+            if (matched != null && !matched.isEmpty()) {
+                finalAds.addAll(matched);
+            }
         }
 
-        // 数量不足则热门补齐
+        // 数量不足则热门补齐（确保至少返回一些广告）
         if (finalAds.size() < limit) {
             List<Advertisement> topAds = adDAO.getTopPerformantAds(limit - finalAds.size());
-            if (topAds != null) finalAds.addAll(topAds);
+            System.out.println("[AdService] 热门广告查询结果数量: " + (topAds != null ? topAds.size() : 0));
+            if (topAds != null && !topAds.isEmpty()) {
+                // 避免重复添加
+                for (Advertisement ad : topAds) {
+                    boolean exists = false;
+                    for (Advertisement existing : finalAds) {
+                        if (existing.getAdId() == ad.getAdId()) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        finalAds.add(ad);
+                        if (finalAds.size() >= limit) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
+        System.out.println("[AdService] 最终返回广告数量: " + finalAds.size());
         return finalAds;
     }
 

@@ -21,13 +21,13 @@ public class AdvertisementDAO {
      */
     public List<Advertisement> getTopPerformantAds(int limit) {
         List<Advertisement> ads = new ArrayList<>();
-        String sql = "SELECT a.*, c.category_name, u.username, s.clicks " +
+        String sql = "SELECT a.*, c.category_name, u.username, COALESCE(s.click_count, 0) as clicks " +
                 "FROM advertisements a " +
                 "JOIN categories c ON a.category_id = c.category_id " +
                 "JOIN users u ON a.user_id = u.user_id " +
                 "LEFT JOIN ad_statistics s ON a.ad_id = s.ad_id " +
                 "WHERE a.status = 'active' " +
-                "ORDER BY s.clicks DESC, a.created_at DESC " +
+                "ORDER BY COALESCE(s.click_count, 0) DESC, a.created_at DESC " +
                 "LIMIT ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -51,13 +51,13 @@ public class AdvertisementDAO {
      */
     public List<Advertisement> getAdvertisementsByTagAndScore(String tag, int limit) {
         List<Advertisement> ads = new ArrayList<>();
-        String sql = "SELECT a.*, c.category_name, u.username, s.clicks " +
+        String sql = "SELECT a.*, c.category_name, u.username, COALESCE(s.click_count, 0) as clicks " +
                 "FROM advertisements a " +
                 "JOIN categories c ON a.category_id = c.category_id " +
                 "JOIN users u ON a.user_id = u.user_id " +
                 "LEFT JOIN ad_statistics s ON a.ad_id = s.ad_id " +
                 "WHERE c.category_name = ? AND a.status = 'active' " +
-                "ORDER BY s.clicks DESC, a.created_at DESC " +
+                "ORDER BY COALESCE(s.click_count, 0) DESC, a.created_at DESC " +
                 "LIMIT ?";
 
         try (Connection conn = DatabaseUtil.getConnection();

@@ -102,28 +102,49 @@ public class ExternalAPIServlet extends HttpServlet {
         // 调用 Service 层的多级推荐逻辑
         List<Advertisement> ads = adService.getAdsByWorkFlow(anonymousUserId, tag, score, limit);
 
-        // 构建响应
+        // 构建响应 - 按照对方要求的格式：{"code": 288, "ads": [{"url": "..."}]}
         JsonArray adArray = new JsonArray();
         if (ads != null) {
             for (Advertisement ad : ads) {
                 JsonObject adJson = new JsonObject();
-                adJson.addProperty("adId", ad.getAdId());
-                adJson.addProperty("title", ad.getTitle());
-                adJson.addProperty("description", ad.getDescription());
-                adJson.addProperty("textContent", ad.getTextContent());
-                adJson.addProperty("imageUrl", ad.getImageUrl());
-                adJson.addProperty("videoUrl", ad.getVideoUrl());
-                adJson.addProperty("targetUrl", ad.getTargetUrl());
-                adJson.addProperty("category", ad.getCategoryName());
-                adArray.add(adJson);
+                // 获取图片URL（优先使用imageUrl，如果没有则使用videoUrl）
+                String url = ad.getImageUrl();
+                if (url == null || url.trim().isEmpty()) {
+                    url = ad.getVideoUrl();
+                }
+                // 如果URL不是完整地址，需要转换为完整URL
+                if (url != null && !url.trim().isEmpty()) {
+                    // 如果是相对路径，转换为完整URL
+                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                        String baseUrl = request.getScheme() + "://" + request.getServerName();
+                        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+                            baseUrl += ":" + request.getServerPort();
+                        }
+                        String contextPath = request.getContextPath();
+                        if (!url.startsWith("/")) {
+                            url = contextPath + "/" + url;
+                        } else {
+                            url = contextPath + url;
+                        }
+                        url = baseUrl + url;
+                    }
+                    adJson.addProperty("url", url);
+                    adArray.add(adJson);
+                }
             }
         }
 
+        // 按照对方要求的格式返回
         JsonObject result = new JsonObject();
-        result.addProperty("success", true);
-        result.addProperty("count", adArray.size());
+        result.addProperty("code", 288);
         result.add("ads", adArray);
 
-        ResponseUtil.sendSuccess(response, result);
+        // 直接写入响应
+        response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.getWriter().write(result.toString());
     }
 }
