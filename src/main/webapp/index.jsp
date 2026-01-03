@@ -68,6 +68,110 @@
             background-color: #ff4500;
         }
 
+        /* 广告轮播样式 */
+        .ad-banner {
+            width: 1200px;
+            margin: 20px auto;
+            height: 200px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .ad-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .ad-slider {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .ad-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ad-item.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .ad-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ad-prev, .ad-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .ad-prev:hover, .ad-next:hover {
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .ad-prev {
+            left: 10px;
+        }
+
+        .ad-next {
+            right: 10px;
+        }
+
+        .ad-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+        }
+
+        .ad-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .ad-dot.active {
+            background-color: #ff6700;
+        }
+
+        .ad-dot:hover {
+            background-color: rgba(255,255,255,0.8);
+        }
+
         /* 分类导航 */
         .category-nav {
             background-color: #fff;
@@ -219,14 +323,31 @@
     </div>
 </div>
 
+<!-- 广告轮播区域 -->
+<div class="ad-banner" id="adBanner">
+    <div class="ad-container">
+        <!-- 广告图片容器 -->
+        <div class="ad-slider" id="adContainer">
+            <!-- 广告图片会动态加载到这里 -->
+        </div>
+
+        <!-- 左右箭头 -->
+        <button class="ad-prev" onclick="prevAdSlide()">❮</button>
+        <button class="ad-next" onclick="nextAdSlide()">❯</button>
+
+        <!-- 指示器 -->
+        <div class="ad-dots" id="adDots">
+            <!-- 指示点会动态生成 -->
+        </div>
+    </div>
+</div>
+
 <div class="category-nav">
     <div class="category-container">
         <ul class="category-list">
-            <!-- 删除"全部商品"的加分逻辑，只保留导航功能 -->
             <li class="category-item">
                 <a href="product-list" class="${empty currentCategory ? 'active' : ''}">全部商品</a>
             </li>
-            <!-- 其他分类保持不变 -->
             <li class="category-item">
                 <a href="product-list?category=food" class="${currentCategory == 'food' ? 'active' : ''}"
                    onclick="addInterestScore('food', 'clickCategory')">食品</a>
@@ -272,7 +393,6 @@
                         <h3 class="product-name">${product.name}</h3>
                         <div class="product-price">¥${product.price}</div>
                         <p class="product-desc">${product.description}</p>
-                        <!-- 修改查看详情链接，添加onclick事件 -->
                         <a href="product-detail?id=${product.id}" class="product-link"
                            onclick="return handleViewDetailClick(event, '${product.category}', ${product.id})">
                             查看详情
@@ -294,11 +414,5 @@
         <p>© 2025 购物商城 版权所有</p>
     </div>
 </div>
-
-<script>
-    window.onload = function() {
-        initLocalStorage();
-    };
-</script>
 </body>
 </html>
