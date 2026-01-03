@@ -2,9 +2,11 @@ package com.admanagement.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+import com.jcraft.jsch.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -24,6 +26,14 @@ public class FileUploadUtil {
     private static final String STORAGE_ROOT;
     private static final String PUBLIC_BASE_URL;
     
+    // Remote server configuration
+    private static final boolean REMOTE_UPLOAD_ENABLED;
+    private static final String REMOTE_HOST;
+    private static final int REMOTE_PORT;
+    private static final String REMOTE_USER;
+    private static final String REMOTE_PASSWORD;
+    private static final String REMOTE_UPLOAD_PATH;
+    
     private static final Set<String> ALLOWED_IMAGE_TYPES = new HashSet<>(Arrays.asList(
             "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"
     ));
@@ -35,6 +45,12 @@ public class FileUploadUtil {
     static {
         String storageRoot = DEFAULT_STORAGE_ROOT;
         String publicBaseUrl = "";
+        boolean remoteEnabled = false;
+        String remoteHost = "";
+        int remotePort = 22;
+        String remoteUser = "";
+        String remotePassword = "";
+        String remotePath = "";
 
         try (InputStream input = FileUploadUtil.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
             if (input != null) {
@@ -50,6 +66,14 @@ public class FileUploadUtil {
                 if (configuredBaseUrl != null && !configuredBaseUrl.trim().isEmpty()) {
                     publicBaseUrl = configuredBaseUrl.trim().replaceAll("/+$", "");
                 }
+                
+                // Load remote server configuration
+                remoteEnabled = Boolean.parseBoolean(props.getProperty("remote.upload.enabled", "false"));
+                remoteHost = props.getProperty("remote.server.host", "");
+                remotePort = Integer.parseInt(props.getProperty("remote.server.port", "22"));
+                remoteUser = props.getProperty("remote.server.user", "");
+                remotePassword = props.getProperty("remote.server.password", "");
+                remotePath = props.getProperty("remote.upload.path", "");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -57,6 +81,12 @@ public class FileUploadUtil {
 
         STORAGE_ROOT = storageRoot;
         PUBLIC_BASE_URL = publicBaseUrl;
+        REMOTE_UPLOAD_ENABLED = remoteEnabled;
+        REMOTE_HOST = remoteHost;
+        REMOTE_PORT = remotePort;
+        REMOTE_USER = remoteUser;
+        REMOTE_PASSWORD = remotePassword;
+        REMOTE_UPLOAD_PATH = remotePath;
     }
 
     /**
@@ -146,6 +176,17 @@ public class FileUploadUtil {
             Files.copy(input, Paths.get(fullPath), StandardCopyOption.REPLACE_EXISTING);
         }
         
+        // Upload to remote server if enabled
+        if (REMOTE_UPLOAD_ENABLED) {
+            try {
+                uploadToRemoteServer(fullPath, uniqueFileName);
+            } catch (Exception e) {
+                System.err.println("Failed to upload to remote server: " + e.getMessage());
+                e.printStackTrace();
+                // Continue even if remote upload fails
+            }
+        }
+        
         // Return full HTTPS URL if configured, otherwise relative path
         if (PUBLIC_BASE_URL != null && !PUBLIC_BASE_URL.isEmpty()) {
             return PUBLIC_BASE_URL + "/" + UPLOAD_DIRECTORY + "/" + uniqueFileName;
@@ -233,5 +274,137 @@ public class FileUploadUtil {
             return false;
         }
     }
+    
+    /**
+     * Upload file to remote server via SCP command
+     */
+    private static void uploadToRemoteServer(String localFilePath, String fileName) throws Exception {
+        try {
+            // Use sshpass and scp command for more reliable upload
+            String remotePath = REMOTE_UPLOAD_PATH + fileName;
+            
+            System.out.println("Uploading file to remote server: " + fileName);
+            
+            // Build scp command
+            ProcessBuilder pb = new ProcessBuilder(
+                "sshpass", "-p", REMOTE_PASSWORD,
+                "scp", 
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-P", String.valueOf(REMOTE_PORT),
+                localFilePath,
+                REMOTE_USER + "@" + REMOTE_HOST + ":" + remotePath
+            );
+            
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            
+            // Read output
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream())
+            );
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("SCP output: " + line);
+            }
+            
+            int exitCode = process.waitFor();
+            
+            if (exitCode == 0) {
+                System.out.println("Successfully uploaded " + fileName + " to " + REMOTE_HOST);
+            } else {
+                throw new Exception("SCP command failed with exit code: " + exitCode);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Failed to upload via SCP: " + e.getMessage());
+            // Fallback to JSch if sshpass is not available
+            uploadViaJSch(localFilePath, fileName);
+        }
+    }
+    
+    /**
+     * Fallback: Upload file using JSch library
+     */
+    private static void uploadViaJSch(String localFilePath, String fileName) throws Exception {
+        JSch jsch = new JSch();
+        Session session = null;
+        ChannelSftp sftpChannel = null;
+        
+        try {
+            // Create SSH session
+            session = jsch.getSession(REMOTE_USER, REMOTE_HOST, REMOTE_PORT);
+            session.setPassword(REMOTE_PASSWORD);
+            
+            // Disable strict host key checking and configure session
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            config.put("PreferredAuthentications", "password");
+            session.setConfig(config);
+            
+            // Set timeouts
+            session.setTimeout(30000); // 30 seconds session timeout
+            
+            // Connect
+            System.out.println("Connecting to remote server: " + REMOTE_HOST + ":" + REMOTE_PORT);
+            session.connect(30000); // 30 seconds connection timeout
+            System.out.println("SSH session connected");
+            
+            // Open SFTP channel
+            Channel channel = session.openChannel("sftp");
+            channel.connect(10000); // 10 seconds channel timeout
+            sftpChannel = (ChannelSftp) channel;
+            System.out.println("SFTP channel opened");
+            
+            // Create remote directory if not exists
+            try {
+                sftpChannel.cd(REMOTE_UPLOAD_PATH);
+                System.out.println("Remote directory exists: " + REMOTE_UPLOAD_PATH);
+            } catch (SftpException e) {
+                // Directory doesn't exist, create it
+                System.out.println("Creating remote directory: " + REMOTE_UPLOAD_PATH);
+                createRemoteDirectory(sftpChannel, REMOTE_UPLOAD_PATH);
+                sftpChannel.cd(REMOTE_UPLOAD_PATH);
+            }
+            
+            // Upload file
+            System.out.println("Uploading file: " + fileName);
+            FileInputStream fis = new FileInputStream(localFilePath);
+            sftpChannel.put(fis, fileName);
+            fis.close();
+            
+            System.out.println("Successfully uploaded " + fileName + " to " + REMOTE_HOST);
+            
+        } finally {
+            // Close connections
+            if (sftpChannel != null && sftpChannel.isConnected()) {
+                sftpChannel.disconnect();
+            }
+            if (session != null && session.isConnected()) {
+                session.disconnect();
+            }
+        }
+    }
+    
+    /**
+     * Create remote directory recursively
+     */
+    private static void createRemoteDirectory(ChannelSftp sftp, String path) throws SftpException {
+        String[] dirs = path.split("/");
+        String currentPath = "";
+        
+        for (String dir : dirs) {
+            if (dir.isEmpty()) {
+                continue;
+            }
+            
+            currentPath += "/" + dir;
+            try {
+                sftp.cd(currentPath);
+            } catch (SftpException e) {
+                sftp.mkdir(currentPath);
+                sftp.cd(currentPath);
+            }
+        }
+    }
 }
-

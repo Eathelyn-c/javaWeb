@@ -113,7 +113,7 @@ public class ExternalAPIServlet extends HttpServlet {
             return;
         }
 
-        // 没有 adClicks 数组，表示是拉取广告请求，score 表示返回广告数量
+        // 拉取广告请求，score 表示返回广告数量
         List<Advertisement> ads = adService.getAdsByWorkFlow(anonymousUserId, tag, 0, score);
 
         JsonArray adArray = new JsonArray();

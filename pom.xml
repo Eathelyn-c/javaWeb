@@ -79,6 +79,13 @@
             <version>4.5.14</version>
         </dependency>
 
+        <!-- SSH/SCP for remote file upload -->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
