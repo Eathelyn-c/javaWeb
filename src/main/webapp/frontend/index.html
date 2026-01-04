@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 广告管理系统</title>
+    <link rel="stylesheet" href="/ad-management/frontend/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">广告管理系统</div>
+            <ul class="nav-menu">
+                <li><a href="/ad-management/frontend/dashboard.html" class="nav-link">我的广告</a></li>
+                <li><a href="/ad-management/frontend/create-ad.html" class="nav-link">发布广告</a></li>
+                <li><span id="username" class="nav-username"></span></li>
+                <li><a href="#" id="logoutBtn" class="nav-link">退出</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>欢迎使用广告管理系统</h1>
+            <p>专业的广告投放和管理平台</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>📢 发布广告</h3>
+                    <p>支持文字、图片、视频等多种广告形式</p>
+                    <a href="/ad-management/frontend/create-ad.html" class="btn btn-primary">立即发布</a>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📊 数据统计</h3>
+                    <p>实时查看广告的浏览量和点击量</p>
+                    <a href="/ad-management/frontend/dashboard.html" class="btn btn-secondary">查看数据</a>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🗂️ 分类管理</h3>
+                    <p>7大类别：食品、美妆、数码、运动、服饰、图书等</p>
+                    <a href="/ad-management/frontend/dashboard.html" class="btn btn-secondary">浏览广告</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/ad-management/frontend/js/config.js"></script>
+    <script src="/ad-management/frontend/js/index.js"></script>
+</body>
+</html>
