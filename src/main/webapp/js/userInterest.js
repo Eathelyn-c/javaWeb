@@ -1,4 +1,3 @@
-// 1. 生成匿名用户ID（UUID格式：user_xxx）
 function generateUUID() {
     return 'user_' + ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -17,13 +16,13 @@ function initLocalStorage() {
     }
     // 初始化广告点击记录
     if (!localStorage.getItem('adClicksData')) {
-        localStorage.setItem('adClicksData', JSON. stringify({}));
+        localStorage.setItem('adClicksData', JSON.stringify({}));
     }
 }
 
 // 3. 分数计算逻辑
 function addInterestScore(tag, behavior) {
-    const scores = JSON. parse(localStorage.getItem('userInterestScores'));
+    const scores = JSON.parse(localStorage.getItem('userInterestScores'));
 
     const weightMap = {
         buy: 5,
@@ -59,7 +58,7 @@ function sendInterestDataWithAdClicks(tag, score) {
 
     for (const [adId, clicks] of Object.entries(adClicksData)) {
         adClicks.push({
-            adId:  adId,
+            adId: adId,
             clicks: clicks
         });
     }
@@ -68,14 +67,14 @@ function sendInterestDataWithAdClicks(tag, score) {
     const requestData = {
         tag: tag,
         platform: platform,
-        anonymousUserId:  anonymousUserId,
+        anonymousUserId: anonymousUserId,
         score: score,
         adClicks: adClicks  // 广告点击数组
     };
 
     console.log("发送数据:", JSON.stringify(requestData, null, 2));
 
-    const proxyUrl = `${window.location.origin}${window.location.pathname. substring(0, window.location.pathname.lastIndexOf('/'))}/ad-data-forward`;
+    const proxyUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/ad-data-forward`;
 
     fetch(proxyUrl, {
         method: 'POST',
@@ -93,10 +92,10 @@ function sendInterestDataWithAdClicks(tag, score) {
             return response.json();
         })
         .then(res => {
-            console.log('数据发送成功：', res);
+            console.log('✅ 数据发送成功：', res);
         })
         .catch(err => {
-            console.error(' 数据发送失败：', err);
+            console.error('❌ 数据发送失败：', err);
         });
 }
 
@@ -124,7 +123,7 @@ function handleCategoryClick(event, tag) {
 // 7. 处理查看详情点击事件
 function handleViewDetailClick(event, tag, productId) {
     event.preventDefault();
-    const link = event. target.closest('a');
+    const link = event.target.closest('a');
     const url = link.getAttribute('href');
     addInterestScore(tag, 'viewDetail');
     setTimeout(() => {
@@ -134,29 +133,48 @@ function handleViewDetailClick(event, tag, productId) {
 
 // 8. 处理搜索结果加分
 function processSearchResults() {
-    const searchResults = document.querySelectorAll('. search-category');
-    if (searchResults.length === 0) return;
+
+    const searchResults = document.querySelectorAll('.search-category');
+    if (searchResults.length === 0) {
+        console.log('⚠️ 未找到搜索结果元素');
+        return;
+    }
 
     console.log('处理搜索结果，共找到', searchResults.length, '个商品');
 
+    // 统计每个品类出现的次数
     const categoryCounts = {};
-    searchResults. forEach(element => {
+    searchResults.forEach(element => {
         const category = element.textContent.trim();
-        if (category. toLowerCase() === 'all') {
+        if (category.toLowerCase() === 'all') {
             return;
         }
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
 
+    console.log('品类统计:', categoryCounts);
+
+    // 获取当前分数
+    const scores = JSON.parse(localStorage.getItem('userInterestScores') || '{}');
+
+    // 为每个品类加分
     for (const [category, count] of Object.entries(categoryCounts)) {
+        // 计算加分（每个商品2分，最多10分）
         const scoreToAdd = Math.min(count * 2, 10);
 
-        const scores = JSON.parse(localStorage.getItem('userInterestScores'));
+        // 更新本地分数
         scores[category] = (scores[category] || 0) + scoreToAdd;
-        localStorage.setItem('userInterestScores', JSON.stringify(scores));
-        console.log(`品类[${category}]搜索结果：增加${scoreToAdd}分，总分=${scores[category]}`);
 
-        // 发送数据（包含广告点击）
+        console.log(`品类[${category}] 搜索结果加分：+${scoreToAdd}分（共${count}个商品），总分=${scores[category]}`);
+    }
+
+    // 保存更新后的分数
+    localStorage.setItem('userInterestScores', JSON.stringify(scores));
+    console.log('已更新本地分数:', scores);
+
+    // 为每个品类发送数据（包含广告点击）
+    for (const [category, count] of Object.entries(categoryCounts)) {
+        const scoreToAdd = Math.min(count * 2, 10);
         sendInterestDataWithAdClicks(category, scoreToAdd);
     }
 }
@@ -185,18 +203,27 @@ function handleAddToCartClick(event, tag) {
 function fetchAndDisplayAds() {
     console.log("=== 开始获取广告 ===");
 
+    // 首先检查广告容器是否存在
+    const adContainer = document.getElementById('adContainer');
+    const adBanner = document.getElementById('adBanner');
+
+    if (!adContainer || !adBanner) {
+        console.log('广告容器不存在，跳过广告获取');
+        return;
+    }
+
     const pathArray = window.location.pathname.split('/');
-    const contextPath = pathArray. length > 1 ? '/' + pathArray[1] :  '';
+    const contextPath = pathArray.length > 1 ? '/' + pathArray[1] : '';
     const apiUrl = `${contextPath}/ad-fetch`;
 
     console.log('请求广告API URL:', apiUrl);
 
     fetch(apiUrl, {
-        method:  'POST',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json;charset=UTF-8'
         },
-        credentials:  'include'
+        credentials: 'include'
     })
         .then(response => {
             console.log('广告API响应状态:', response.status);
@@ -210,13 +237,13 @@ function fetchAndDisplayAds() {
             console.log('广告API响应文本:', responseText);
 
             try {
-                const data = JSON. parse(responseText);
+                const data = JSON.parse(responseText);
                 console.log('解析后的广告数据:', data);
 
                 let ads = [];
 
                 if (data.code === 200 && data.ads) {
-                    ads = data. ads;
+                    ads = data.ads;
                 } else if (data.success === true && data.data && data.data.ads) {
                     ads = data.data.ads;
                 } else if (data.success === true && Array.isArray(data.ads)) {
@@ -227,7 +254,7 @@ function fetchAndDisplayAds() {
                     console.log(`✅ 成功获取 ${ads.length} 条广告`);
                     createAdCarousel(ads);
                 } else {
-                    console.warn('⚠️ 没有广告数据:', data. message || data.msg || '未知原因');
+                    console.warn('⚠️ 没有广告数据:', data.message || data.msg || '未知原因');
                     hideAdBanner();
                 }
             } catch (parseError) {
@@ -272,7 +299,7 @@ function createAdCarousel(ads) {
 
         // 添加点击事件
         img.addEventListener('click', function() {
-            const adId = this. getAttribute('data-ad-id');
+            const adId = this.getAttribute('data-ad-id');
             console.log('用户点击了广告 ID:', adId);
             recordAdClick(adId);
         });
@@ -297,17 +324,17 @@ function createAdCarousel(ads) {
         });
     }
 
-    initAdCarousel(ads. length);
+    initAdCarousel(ads.length);
 }
 
-// 13.  初始化广告轮播
+// 13. 初始化广告轮播
 function initAdCarousel(totalSlides) {
     let currentSlide = 0;
     let slideInterval;
 
     function showAdSlide(index) {
-        const adItems = document. querySelectorAll('.ad-item');   // ✅ 修复：去掉空格
-        const dots = document.querySelectorAll('.ad-dot');       // ✅ 修复：去掉空格
+        const adItems = document.querySelectorAll('.ad-item');
+        const dots = document.querySelectorAll('.ad-dot');
 
         currentSlide = index;
         if (currentSlide >= totalSlides) currentSlide = 0;
@@ -317,7 +344,7 @@ function initAdCarousel(totalSlides) {
         dots.forEach(dot => dot.classList.remove('active'));
 
         if (adItems[currentSlide]) {
-            adItems[currentSlide]. classList.add('active');
+            adItems[currentSlide].classList.add('active');
         }
         if (dots[currentSlide]) {
             dots[currentSlide].classList.add('active');
@@ -354,7 +381,7 @@ function initAdCarousel(totalSlides) {
 function hideAdBanner() {
     const adBanner = document.getElementById('adBanner');
     if (adBanner) {
-        adBanner. style.display = 'none';
+        adBanner.style.display = 'none';
     }
 }
 
@@ -362,6 +389,12 @@ function hideAdBanner() {
 function recordAdClick(adId) {
     console.log('=== 记录广告点击 ===');
     console.log('广告ID:', adId);
+
+    // 检查adId是否有效
+    if (!adId || adId === 'undefined' || adId === 'null') {
+        console.error('❌ 无效的广告ID:', adId);
+        return;
+    }
 
     // 获取广告点击数据
     const adClicksData = JSON.parse(localStorage.getItem('adClicksData') || '{}');
@@ -371,12 +404,19 @@ function recordAdClick(adId) {
 
     localStorage.setItem('adClicksData', JSON.stringify(adClicksData));
 
-    console.log(`广告 ${adId} 当前点击次数:  ${adClicksData[adId]}`);
+    console.log(`广告 ${adId} 当前点击次数: ${adClicksData[adId]}`);
     console.log('所有广告点击数据:', adClicksData);
 }
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
     initLocalStorage();
-    setTimeout(fetchAndDisplayAds, 500);
+
+    // 只在有广告容器的页面获取广告
+    const adContainer = document.getElementById('adContainer');
+    if (adContainer) {
+        setTimeout(fetchAndDisplayAds, 500);
+    } else {
+        console.log('当前页面没有广告容器，跳过广告获取');
+    }
 });
