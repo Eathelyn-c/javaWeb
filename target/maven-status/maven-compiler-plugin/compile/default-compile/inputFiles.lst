@@ -1,0 +1,10 @@
+E:\web_lab\video-website\src\main\java\com\videoweb\dao\VideoDao.java
+E:\web_lab\video-website\src\main\java\com\videoweb\model\Video.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\AdReceiveServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\IndexServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\RequestAdServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\SubmitScoreServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\VideoListServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\servlet\VideoPlayServlet.java
+E:\web_lab\video-website\src\main\java\com\videoweb\util\DBUtil.java
+E:\web_lab\video-website\src\main\java\com\videoweb\util\HttpUtil.java
