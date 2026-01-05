@@ -1,0 +1,10 @@
+com\videoweb\servlet\AdReceiveServlet.class
+com\videoweb\servlet\RequestAdServlet.class
+com\videoweb\dao\VideoDao.class
+com\videoweb\servlet\VideoListServlet.class
+com\videoweb\util\DBUtil.class
+com\videoweb\servlet\IndexServlet.class
+com\videoweb\util\HttpUtil.class
+com\videoweb\model\Video.class
+com\videoweb\servlet\VideoPlayServlet.class
+com\videoweb\servlet\SubmitScoreServlet.class
