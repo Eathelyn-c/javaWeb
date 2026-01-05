@@ -23,7 +23,6 @@
             color: #333;
         }
 
-        /* 头部导航栏 */
         .header {
             background-color: #333;
             color: #fff;
@@ -101,7 +100,6 @@
             min-height: 500px;
         }
 
-        /* 左侧图片区域 */
         .detail-img-container {
             flex: 0 0 500px;
             height: 500px;
@@ -195,14 +193,12 @@
             border-radius: 4px;
         }
 
-        /* 按钮容器 */
         .detail-btns {
             display: flex;
             gap: 20px;
             margin-top: 20px;
         }
 
-        /* 加入购物车按钮 */
         .cart-btn {
             padding: 18px 40px;
             background-color: #ff6700;
@@ -224,7 +220,6 @@
             box-shadow: 0 6px 15px rgba(255,103,0,0.4);
         }
 
-        /* 购买按钮 */
         .buy-btn {
             padding: 18px 40px;
             background-color: #e60012;
@@ -246,7 +241,6 @@
             box-shadow: 0 6px 15px rgba(230,0,18,0.4);
         }
 
-        /* 无商品信息 */
         .no-product {
             width: 1200px;
             margin: 50px auto;

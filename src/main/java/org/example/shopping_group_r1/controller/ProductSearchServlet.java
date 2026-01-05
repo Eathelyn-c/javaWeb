@@ -1,7 +1,7 @@
 package org.example.shopping_group_r1.controller;
 
 import org.example.shopping_group_r1.model.Product;
-import org.example.shopping_group_r1.model.ProductDAO;
+import org.example.shopping_group_r1.DAO.ProductDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

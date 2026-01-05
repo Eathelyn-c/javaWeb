@@ -172,7 +172,6 @@
             background-color: rgba(255,255,255,0.8);
         }
 
-        /* 分类导航 */
         .category-nav {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -206,7 +205,6 @@
             color: #fff;
         }
 
-        /* 商品列表容器 */
         .container {
             width: 1200px;
             margin: 0 auto;
@@ -216,7 +214,6 @@
             padding-bottom: 50px;
         }
 
-        /* 商品卡片 */
         .product-card {
             background-color: #fff;
             border-radius: 8px;
@@ -294,7 +291,6 @@
             background-color: #ff4500;
         }
 
-        /* 页脚 */
         .footer {
             background-color: #333;
             color: #fff;
@@ -308,14 +304,12 @@
             margin: 0 auto;
         }
     </style>
-    <!-- 引入用户兴趣处理脚本 -->
     <script src="${pageContext.request.contextPath}/js/userInterest.js"></script>
 </head>
 <body>
 <div class="header">
     <div class="header-container">
         <a href="product-list" class="logo">购物商城</a>
-        <!-- 搜索表单：绑定提交事件（处理搜索行为加分） -->
         <form action="product-search" method="post" class="search-form" onsubmit="return handleSearchSubmit(event)">
             <input type="text" name="keyword" id="searchKeyword" class="search-input" placeholder="输入商品名称搜索...">
             <button type="submit" class="search-btn">搜索</button>

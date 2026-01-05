@@ -1,5 +1,6 @@
-package org.example.shopping_group_r1.model;
+package org.example.shopping_group_r1.DAO;
 
+import org.example.shopping_group_r1.model.Product;
 import org.example.shopping_group_r1.util.DBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
